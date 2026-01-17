@@ -2,13 +2,13 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { OptimizationConfig } from "../types";
 
 export const optimizePrompt = async (promptText: string, config: OptimizationConfig): Promise<any> => {
-  // The API key is loaded from the environment variable process.env.API_KEY.
-  const apiKey = process.env.API_KEY;
+  // Prioritize user-provided key from config, fallback to environment variable
+  const apiKey = config.apiKey?.trim() || process.env.API_KEY;
   
   // Check if key is missing and log a warning as requested
   if (!apiKey || apiKey.trim() === '') {
-    console.warn("Verdant-Route: No API_KEY found in environment variables. Please add it to your .env file.");
-    throw new Error("Missing API Key. Please configure process.env.API_KEY to use the optimization engine.");
+    console.warn("ERDE-GreenAI: No API_KEY found in configuration or environment variables.");
+    throw new Error("Missing API Key. Please enter a valid Gemini API Key in the settings configuration or check your environment variables.");
   }
 
   const ai = new GoogleGenAI({ apiKey });

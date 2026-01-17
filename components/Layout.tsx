@@ -37,7 +37,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigat
             <div className="w-8 h-8 rounded-lg bg-verdant-green/10 flex items-center justify-center border border-verdant-green/20 group-hover:border-verdant-green/50 group-hover:shadow-verdant-glow transition-all duration-300">
               <span className="material-symbols-outlined text-verdant-green text-[20px]">eco</span>
             </div>
-            <h1 className="text-lg font-bold tracking-tight text-white group-hover:text-verdant-green transition-colors">Verdant-Route</h1>
+            <h1 className="text-lg font-bold tracking-tight text-white group-hover:text-verdant-green transition-colors">ERDE-GreenAI</h1>
           </div>
 
           <div className="hidden md:flex items-center bg-white/5 rounded-lg p-1 border border-border-highlight">
@@ -95,7 +95,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigat
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-verdant-green opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-verdant-green"></span>
             </span>
-            <span className="text-[10px] uppercase tracking-widest text-gray-400 font-bold">Verdant Engine: <span className="text-verdant-green">ACTIVE</span></span>
+            <span className="text-[10px] uppercase tracking-widest text-gray-400 font-bold">ERDE Engine: <span className="text-verdant-green">ACTIVE</span></span>
           </div>
         </div>
         <div className="hidden sm:flex items-center gap-4">

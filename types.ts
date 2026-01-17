@@ -29,6 +29,7 @@ export interface OptimizationConfig {
   model: string;
   temperature: number;
   autoPilot: boolean;
+  apiKey?: string;
 }
 
 export interface HistoryItem {

@@ -164,6 +164,40 @@ export const ConfigModal: React.FC<ConfigModalProps> = ({ isOpen, onClose, confi
               </div>
             </div>
           </div>
+          
+          {/* API Key Input Section */}
+          <div className="px-6 py-6 border-b border-border-dim bg-white/[0.01]">
+             <h3 className="text-gray-500 text-[11px] font-bold tracking-[0.1em] uppercase mb-4 flex items-center gap-2">
+               Authentication Override 
+               <span className="w-1.5 h-1.5 rounded-full bg-verdant-green"></span>
+             </h3>
+             <div className="flex flex-col gap-3">
+               <label className="text-white text-sm font-medium flex justify-between">
+                 <span>Gemini API Key</span>
+                 <span className="text-[10px] text-gray-500 font-normal">Optional - Overrides System Env</span>
+               </label>
+               <div className="relative group">
+                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none transition-colors group-focus-within:text-verdant-green text-gray-500">
+                    <span className="material-symbols-outlined text-[18px]">key</span>
+                 </div>
+                 <input 
+                    type="password"
+                    value={config.apiKey || ''}
+                    onChange={(e) => handleChange('apiKey', e.target.value)}
+                    placeholder="AIzaSy..."
+                    className="w-full bg-[#151515] border border-border-dim rounded px-3 pl-10 h-12 text-sm text-white placeholder:text-gray-700 focus:ring-1 focus:ring-verdant-green focus:border-verdant-green focus:shadow-[0_0_15px_rgba(0,255,0,0.1)] outline-none transition-all"
+                 />
+                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                    <span className={`material-symbols-outlined text-[16px] transition-colors ${config.apiKey ? 'text-verdant-green' : 'text-gray-600'}`}>
+                      {config.apiKey ? 'lock' : 'lock_open'}
+                    </span>
+                 </div>
+               </div>
+               <p className="text-[10px] text-gray-500 leading-relaxed pl-1 border-l-2 border-white/10">
+                 Your key is prioritized for all requests. It is never stored on a server and only persists for this session.
+               </p>
+             </div>
+          </div>
 
           {/* Parameters */}
           <div className={`px-6 py-6 border-b border-border-dim transition-all duration-300 ${config.autoPilot ? 'opacity-40 pointer-events-none grayscale' : 'opacity-100'}`}>

@@ -3,16 +3,147 @@ import { Layout } from './components/Layout';
 import { ConfigModal } from './components/ConfigModal';
 import { AppView, PromptTemplate, OptimizationResult, HistoryItem, OptimizationConfig } from './types';
 import { optimizePrompt } from './services/geminiService';
-import { BarChart, Bar, ResponsiveContainer, Cell, PieChart, Pie, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
+import { BarChart, Bar, ResponsiveContainer, Cell, PieChart, Pie, CartesianGrid, XAxis, YAxis, Tooltip } from 'recharts';
 
 // --- MOCK DATA ---
-const templates: PromptTemplate[] = [
-  { id: '1', title: 'Long-Form Research Synth', description: 'Aggregates multiple PDF sources into a coherent technical synthesis with citation mapping.', category: 'Research', rating: 'A+', tokens: 2450, savings: 54, models: ['gpt4', 'claude'] },
-  { id: '2', title: 'Semantic CSV Extractor', description: 'Converts unstructured call transcripts into clean CSV data with 98% semantic accuracy.', category: 'Extraction', rating: 'A+', tokens: 1120, savings: 62, models: ['gpt4'] },
-  { id: '3', title: 'Zero-Shot Sentiment Core', description: 'A highly compressed prompt for bulk sentiment analysis with minimal system-role overhead.', category: 'Analysis', rating: 'A', tokens: 85, savings: 41, models: ['claude'] },
-  { id: '4', title: 'Postgres Query Optimizer', description: 'Generates highly optimized SQL queries with specific constraints on join complexity.', category: 'Development', rating: 'A+', tokens: 340, savings: 71, models: ['gpt4'] },
-  { id: '5', title: 'Minimalist Product Description', description: 'Creates punchy, high-converting descriptions without conversational fluff.', category: 'Drafting', rating: 'A+', tokens: 150, savings: 48, models: ['claude'] },
-  { id: '6', title: 'JSON Extractor Strict', description: 'Forces only valid JSON output without markdown fencing or filler tokens.', category: 'Logic', rating: 'A+', tokens: 90, savings: 74, models: ['gpt4'] }
+const TEMPLATE_DATABASE: PromptTemplate[] = [
+  // --- GEMINI 3.0 PRO (High Reasoning) ---
+  { 
+    id: 'pro-1', 
+    title: 'Legacy Code Refactor', 
+    description: 'Analyzes legacy COBOL/Fortran snippets and rewrites them in modern Rust with memory safety annotations.', 
+    category: 'Development', 
+    rating: 'B', 
+    tokens: 3200, 
+    savings: 12, 
+    models: ['gemini-3-pro'] 
+  },
+  { 
+    id: 'pro-2', 
+    title: 'Legal Contract Audit', 
+    description: 'Scans NDA documents for specific clauses related to IP assignment and liability caps, flagging risks.', 
+    category: 'Analysis', 
+    rating: 'B', 
+    tokens: 4500, 
+    savings: 15, 
+    models: ['gemini-3-pro'] 
+  },
+  { 
+    id: 'pro-3', 
+    title: 'Quantum Physics Explainer', 
+    description: 'Generates university-level explanations of quantum entanglement with mathematical proofs.', 
+    category: 'Research', 
+    rating: 'B', 
+    tokens: 2100, 
+    savings: 18, 
+    models: ['gemini-3-pro'] 
+  },
+  
+  // --- GEMINI 3.0 FLASH (Speed/Efficiency) ---
+  { 
+    id: 'flash3-1', 
+    title: 'React Component Generator', 
+    description: 'Creates functional React components with Tailwind classes based on visual descriptions.', 
+    category: 'Development', 
+    rating: 'A', 
+    tokens: 650, 
+    savings: 45, 
+    models: ['gemini-3-flash'] 
+  },
+  { 
+    id: 'flash3-2', 
+    title: 'Invoice Data Extractor', 
+    description: 'Extracts line items, dates, and tax amounts from messy OCR text into clean JSON.', 
+    category: 'Extraction', 
+    rating: 'A+', 
+    tokens: 400, 
+    savings: 68, 
+    models: ['gemini-3-flash'] 
+  },
+  { 
+    id: 'flash3-3', 
+    title: 'Technical Blog Outliner', 
+    description: 'Drafts comprehensive outlines for technical articles including SEO keywords and headings.', 
+    category: 'Drafting', 
+    rating: 'A+', 
+    tokens: 300, 
+    savings: 55, 
+    models: ['gemini-3-flash'] 
+  },
+
+  // --- GEMINI 2.5 FLASH (Legacy/Stable) ---
+  { 
+    id: 'flash2-1', 
+    title: 'Regex Generator', 
+    description: 'Constructs complex Regular Expressions for email validation and phone number formatting.', 
+    category: 'Development', 
+    rating: 'A+', 
+    tokens: 150, 
+    savings: 72, 
+    models: ['gemini-2.5-flash'] 
+  },
+  { 
+    id: 'flash2-2', 
+    title: 'Sentiment Analyzer', 
+    description: 'Classifies customer support tickets into Positive, Neutral, or Negative buckets.', 
+    category: 'Analysis', 
+    rating: 'A+', 
+    tokens: 120, 
+    savings: 80, 
+    models: ['gemini-2.5-flash'] 
+  },
+  { 
+    id: 'flash2-3', 
+    title: 'Viral Tweet Drafter', 
+    description: 'Generates 5 variations of a product launch announcement optimized for engagement.', 
+    category: 'Drafting', 
+    rating: 'A+', 
+    tokens: 200, 
+    savings: 65, 
+    models: ['gemini-2.5-flash'] 
+  },
+
+  // --- OTHERS for Variety ---
+  { 
+    id: 'mix-1', 
+    title: 'SQL Query Optimizer', 
+    description: 'Rewrites inefficient subqueries into optimized JOINs for Postgres.', 
+    category: 'Development', 
+    rating: 'A', 
+    tokens: 340, 
+    savings: 71, 
+    models: ['gemini-3-flash', 'gemini-3-pro'] 
+  },
+  { 
+    id: 'mix-2', 
+    title: 'Resume Parser', 
+    description: 'Converts PDF resume text into structured candidate profiles.', 
+    category: 'Extraction', 
+    rating: 'A', 
+    tokens: 900, 
+    savings: 50, 
+    models: ['gemini-3-flash'] 
+  },
+  { 
+    id: 'mix-3', 
+    title: 'Competitor Analysis Synth', 
+    description: 'Summarizes 10 different competitor landing pages into a strategy matrix.', 
+    category: 'Research', 
+    rating: 'B', 
+    tokens: 5200, 
+    savings: 22, 
+    models: ['gemini-3-pro'] 
+  },
+  { 
+    id: 'mix-4', 
+    title: 'JSON Logic Validator', 
+    description: 'Ensures JSON output strictly adheres to a provided schema without hallucination.', 
+    category: 'Logic', 
+    rating: 'A+', 
+    tokens: 90, 
+    savings: 74, 
+    models: ['gemini-3-flash'] 
+  }
 ];
 
 const EXAMPLE_PROMPTS = [
@@ -160,7 +291,7 @@ const LoginScreen = ({ onLogin }: { onLogin: () => void }) => {
       <section className="relative flex flex-1 flex-col justify-between bg-[#050505] p-8 lg:p-16 border-b lg:border-b-0 lg:border-r border-border-dim z-10">
         <div className="flex items-center gap-2">
           <span className="material-symbols-outlined text-white text-[24px]">token</span>
-          <span className="font-mono text-sm tracking-widest text-white font-bold uppercase">Verdant-Route</span>
+          <span className="font-mono text-sm tracking-widest text-white font-bold uppercase">ERDE-GreenAI</span>
         </div>
         
         <div className="flex flex-col gap-6 max-w-xl my-10 lg:my-0 animate-fade-in">
@@ -593,11 +724,46 @@ const GalleryScreen = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  const filteredTemplates = templates.filter(t => 
-    t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    t.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    t.category.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // -- Filters State --
+  const [filterModel, setFilterModel] = useState<string | null>(null);
+  const [filterCategory, setFilterCategory] = useState<string>('All');
+  const [filterRating, setFilterRating] = useState<string | null>(null);
+
+  // -- Mapping UI labels to Data values --
+  const CATEGORY_MAP: {[key: string]: string} = {
+    'Code Generation': 'Development',
+    'Data Extraction': 'Extraction',
+    'Analysis': 'Analysis',
+    'Creative Writing': 'Drafting'
+  };
+
+  const MODEL_MAP: {[key: string]: string} = {
+    'Gemini 3.0 Pro': 'gemini-3-pro',
+    'Gemini 3.0 Flash': 'gemini-3-flash',
+    'Gemini 2.5 Flash': 'gemini-2.5-flash'
+  };
+
+  const filteredTemplates = TEMPLATE_DATABASE.filter(t => {
+    // 1. Search Query
+    const matchesSearch = 
+      t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      t.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      t.category.toLowerCase().includes(searchQuery.toLowerCase());
+
+    // 2. Model Filter
+    const matchesModel = filterModel ? t.models.some(m => m.includes(MODEL_MAP[filterModel])) : true;
+
+    // 3. Category Filter
+    let matchesCategory = true;
+    if (filterCategory !== 'All') {
+       matchesCategory = t.category === CATEGORY_MAP[filterCategory] || t.category === filterCategory;
+    }
+
+    // 4. Rating Filter
+    const matchesRating = filterRating ? t.rating.startsWith(filterRating) : true;
+
+    return matchesSearch && matchesModel && matchesCategory && matchesRating;
+  });
 
   const handleShare = (e: React.MouseEvent, template: PromptTemplate) => {
     e.stopPropagation();
@@ -611,41 +777,110 @@ const GalleryScreen = () => {
     <div className="flex-1 flex overflow-hidden h-full animate-fade-in">
       {/* Sidebar */}
       <aside className="w-64 border-r border-border-highlight p-6 flex flex-col gap-8 hidden lg:flex overflow-y-auto custom-scrollbar">
+        
+        {/* Filter: Models */}
         <div className="flex flex-col gap-4">
-          <h3 className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-bold">AI Models</h3>
+          <div className="flex items-center justify-between">
+            <h3 className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-bold">AI Models</h3>
+            {filterModel && (
+              <button onClick={() => setFilterModel(null)} className="text-[10px] text-gray-500 hover:text-white hover:underline">Clear</button>
+            )}
+          </div>
           <div className="flex flex-col gap-2">
-            {['Gemini 3.0 Pro', 'Gemini 3.0 Flash', 'Gemini 2.5 Flash'].map((m) => (
-              <label key={m} className="flex items-center gap-3 group cursor-pointer active:scale-[0.98] transition-transform">
-                <div className="w-4 h-4 border border-white/20 rounded-sm flex items-center justify-center group-hover:border-verdant-green transition-colors">
-                  {m === 'Gemini 3.0 Pro' && <div className="w-2 h-2 bg-verdant-green rounded-sm"></div>}
-                </div>
-                <span className="text-sm text-gray-300 group-hover:text-white">{m}</span>
-              </label>
-            ))}
+            {Object.keys(MODEL_MAP).map((m) => {
+              const isActive = filterModel === m;
+              return (
+                <label 
+                  key={m} 
+                  className={`flex items-center gap-3 group cursor-pointer active:scale-[0.98] transition-all p-2 rounded -mx-2 ${isActive ? 'bg-white/5' : 'hover:bg-white/[0.02]'}`}
+                  onClick={() => setFilterModel(isActive ? null : m)}
+                >
+                  <div className={`w-4 h-4 border rounded-sm flex items-center justify-center transition-colors ${isActive ? 'border-verdant-green bg-verdant-green/10' : 'border-white/20 group-hover:border-verdant-green'}`}>
+                    {isActive && <div className="w-2 h-2 bg-verdant-green rounded-sm"></div>}
+                  </div>
+                  <span className={`text-sm transition-colors ${isActive ? 'text-white font-medium' : 'text-gray-300 group-hover:text-white'}`}>{m}</span>
+                </label>
+              );
+            })}
           </div>
         </div>
         
+        {/* Filter: Purpose */}
         <div className="flex flex-col gap-4">
           <h3 className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-bold">Purpose</h3>
           <div className="flex flex-col gap-2">
-            <button className="flex items-center justify-between px-3 py-2 rounded bg-white/5 border border-white/10 text-sm text-white text-left shadow-sm">
+            <button 
+              onClick={() => setFilterCategory('All')}
+              className={`flex items-center justify-between px-3 py-2 rounded border text-sm text-left shadow-sm transition-all duration-200 ${
+                filterCategory === 'All' 
+                ? 'bg-white/10 border-white/20 text-white shadow-[0_0_10px_rgba(255,255,255,0.05)]' 
+                : 'bg-transparent border-transparent text-gray-400 hover:bg-white/5 hover:text-white'
+              }`}
+            >
               <span>All Templates</span>
-              <span className="text-[10px] bg-white/10 px-1.5 py-0.5 rounded font-mono">{templates.length}</span>
+              <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono ${filterCategory === 'All' ? 'bg-white/20 text-white' : 'bg-white/5 text-gray-600'}`}>{TEMPLATE_DATABASE.length}</span>
             </button>
-            {['Code Generation', 'Data Extraction', 'Analysis', 'Creative Writing'].map(c => (
-              <button key={c} className="flex items-center justify-between px-3 py-2 rounded text-sm text-gray-400 hover:bg-white/5 hover:text-white transition-all active:scale-[0.98] text-left">
-                <span>{c}</span>
-                <span className="text-[10px] text-gray-600 font-mono">{Math.floor(Math.random() * 50)}</span>
-              </button>
-            ))}
+            
+            {Object.keys(CATEGORY_MAP).map(c => {
+               const isActive = filterCategory === c;
+               const count = TEMPLATE_DATABASE.filter(t => t.category === CATEGORY_MAP[c]).length;
+               return (
+                <button 
+                  key={c} 
+                  onClick={() => setFilterCategory(c)}
+                  className={`flex items-center justify-between px-3 py-2 rounded text-sm transition-all active:scale-[0.98] text-left border ${
+                    isActive
+                    ? 'bg-white/10 border-verdant-cyan/30 text-verdant-cyan shadow-[0_0_10px_rgba(0,191,255,0.1)]'
+                    : 'bg-transparent border-transparent text-gray-400 hover:bg-white/5 hover:text-white'
+                  }`}
+                >
+                  <span>{c}</span>
+                  <span className={`text-[10px] font-mono ${isActive ? 'text-verdant-cyan' : 'text-gray-600'}`}>{count}</span>
+                </button>
+               );
+            })}
           </div>
         </div>
 
+        {/* Filter: Rating */}
         <div className="flex flex-col gap-4">
-          <h3 className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-bold">Carbon Rating</h3>
+           <div className="flex items-center justify-between">
+            <h3 className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-bold">Carbon Rating</h3>
+            {filterRating && (
+              <button onClick={() => setFilterRating(null)} className="text-[10px] text-gray-500 hover:text-white hover:underline">Clear</button>
+            )}
+          </div>
           <div className="flex flex-wrap gap-2">
-            <span className="px-2 py-1 rounded border border-verdant-green/20 bg-verdant-green/5 text-verdant-green text-[10px] font-bold cursor-pointer hover:bg-verdant-green/10 transition-colors">A+ (Low)</span>
-            <span className="px-2 py-1 rounded border border-white/10 bg-white/5 text-gray-400 text-[10px] font-bold cursor-pointer hover:bg-white/10 transition-colors">A (Medium)</span>
+            <button 
+              onClick={() => setFilterRating(filterRating === 'A+' ? null : 'A+')}
+              className={`px-2 py-1 rounded border text-[10px] font-bold transition-all ${
+                filterRating === 'A+'
+                ? 'border-verdant-green bg-verdant-green text-black shadow-verdant-glow'
+                : 'border-verdant-green/20 bg-verdant-green/5 text-verdant-green hover:bg-verdant-green/10'
+              }`}
+            >
+              A+ (Low)
+            </button>
+            <button 
+              onClick={() => setFilterRating(filterRating === 'A' ? null : 'A')} // Simplified logic, 'A' startsWith 'A' so it might match 'A+' too if not careful, but visually simpler.
+              className={`px-2 py-1 rounded border text-[10px] font-bold transition-all ${
+                filterRating === 'A'
+                ? 'border-white bg-white text-black'
+                : 'border-white/10 bg-white/5 text-gray-400 hover:bg-white/10'
+              }`}
+            >
+              A (Medium)
+            </button>
+             <button 
+              onClick={() => setFilterRating(filterRating === 'B' ? null : 'B')} 
+              className={`px-2 py-1 rounded border text-[10px] font-bold transition-all ${
+                filterRating === 'B'
+                ? 'border-yellow-500 bg-yellow-500 text-black'
+                : 'border-white/10 bg-white/5 text-gray-400 hover:bg-white/10 hover:text-yellow-200'
+              }`}
+            >
+              B (High)
+            </button>
           </div>
         </div>
       </aside>
@@ -670,12 +905,13 @@ const GalleryScreen = () => {
         </div>
 
         {filteredTemplates.length === 0 ? (
-           <div className="flex flex-col items-center justify-center py-20 opacity-50">
+           <div className="flex flex-col items-center justify-center py-20 opacity-50 animate-fade-in">
              <span className="material-symbols-outlined text-4xl mb-4">search_off</span>
-             <p className="text-sm font-mono">No templates found matching "{searchQuery}"</p>
+             <p className="text-sm font-mono">No templates found matching filters.</p>
+             <button onClick={() => { setSearchQuery(''); setFilterCategory('All'); setFilterModel(null); setFilterRating(null); }} className="mt-4 text-verdant-green hover:underline text-xs">Clear all filters</button>
            </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 animate-fade-in">
             {filteredTemplates.map((t) => (
               <div key={t.id} className="glass-panel p-6 rounded group hover:bg-white/[0.06] transition-all duration-200 active:scale-[0.98] cursor-pointer border border-transparent hover:border-verdant-green/50 hover:shadow-verdant-glow relative overflow-hidden">
                 <div className="flex justify-between items-start mb-4">
@@ -684,13 +920,14 @@ const GalleryScreen = () => {
                       ${t.category === 'Research' ? 'bg-blue-900/30 text-blue-300 border-blue-500/20' : 
                         t.category === 'Extraction' ? 'bg-cyan-900/30 text-cyan-300 border-cyan-500/20' :
                         t.category === 'Analysis' ? 'bg-pink-900/30 text-pink-300 border-pink-500/20' : 
+                        t.category === 'Development' ? 'bg-emerald-900/30 text-emerald-300 border-emerald-500/20' :
                         'bg-purple-900/30 text-purple-300 border-purple-500/20'}`}>
                       {t.category}
                     </span>
                   </div>
                   <div className="flex items-center gap-1.5 bg-green-900/20 px-2 py-1 rounded border border-green-500/20">
-                    {t.rating === 'A+' && <span className="w-1.5 h-1.5 rounded-full bg-verdant-green animate-pulse"></span>}
-                    <span className={`text-[10px] font-bold ${t.rating === 'A+' ? 'text-verdant-green' : 'text-yellow-400'}`}>{t.rating}</span>
+                    {(t.rating === 'A+' || t.rating === 'A') && <span className="w-1.5 h-1.5 rounded-full bg-verdant-green animate-pulse"></span>}
+                    <span className={`text-[10px] font-bold ${t.rating.includes('A') ? 'text-verdant-green' : 'text-yellow-400'}`}>{t.rating}</span>
                   </div>
                 </div>
                 <h4 className={`text-lg font-semibold text-white mb-2 transition-colors ${
@@ -698,7 +935,7 @@ const GalleryScreen = () => {
                   t.category === 'Extraction' ? 'group-hover:text-cyan-300' :
                   'group-hover:text-verdant-green'
                 }`}>{t.title}</h4>
-                <p className="text-sm text-gray-500 line-clamp-2 mb-6">{t.description}</p>
+                <p className="text-sm text-gray-500 line-clamp-2 mb-6 group-hover:text-gray-300 transition-colors">{t.description}</p>
                 
                 <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/5">
                   <div className="flex flex-col">
@@ -714,9 +951,9 @@ const GalleryScreen = () => {
                 <div className="mt-4 flex items-center justify-between">
                   <div className="flex -space-x-2">
                     {t.models.map((m, i) => (
-                      <div key={i} className="w-6 h-6 rounded border border-[#050505] bg-gray-800 flex items-center justify-center">
+                      <div key={i} title={m} className="w-6 h-6 rounded border border-[#050505] bg-gray-800 flex items-center justify-center hover:scale-110 transition-transform z-10">
                         <span className="material-symbols-outlined text-[14px] text-gray-400">
-                          {m === 'gpt4' ? 'psychology' : 'neurology'}
+                          {m.includes('pro') ? 'psychology' : 'bolt'}
                         </span>
                       </div>
                     ))}
@@ -731,7 +968,7 @@ const GalleryScreen = () => {
                          {copiedId === t.id ? 'check' : 'share'}
                        </span>
                     </button>
-                    <span className="material-symbols-outlined text-gray-600 group-hover:text-white transition-colors">arrow_forward</span>
+                    <span className="material-symbols-outlined text-gray-600 group-hover:text-white transition-colors transform group-hover:translate-x-1">arrow_forward</span>
                   </div>
                 </div>
               </div>
@@ -764,7 +1001,7 @@ const AboutScreen = ({ onNavigate }: { onNavigate: (view: AppView) => void }) =>
            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-verdant-green/5 rounded-full blur-[100px] pointer-events-none"></div>
            <div className="relative z-10">
              <h1 className="text-6xl md:text-8xl font-bold tracking-tighter text-white mb-6 leading-[0.9]">
-               The <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-600">Invisible</span><br/> 
+               The <span className="text-verdant-green">Green</span><br/> 
                Engine
              </h1>
              <p className="text-xl text-gray-400 font-light max-w-2xl mx-auto leading-relaxed">
@@ -944,7 +1181,7 @@ const AboutScreen = ({ onNavigate }: { onNavigate: (view: AppView) => void }) =>
               </div>
               
               <div className="absolute top-0 left-0 w-full h-full p-6 bg-[#0A0A0A] opacity-0 scale-105 transition-all duration-500 group-hover:opacity-100 group-hover:scale-100 flex flex-col justify-center">
-                 <p className="text-verdant-green mb-2">// VERDANT OPTIMIZED</p>
+                 <p className="text-verdant-green mb-2">// ERDE OPTIMIZED</p>
                  <p className="text-white">
                     "Write robust JS sort function for number array. Handle errors."
                  </p>
@@ -969,7 +1206,7 @@ const AboutScreen = ({ onNavigate }: { onNavigate: (view: AppView) => void }) =>
         <section className="space-y-12 py-12">
             <div className="text-center space-y-4">
                 <h2 className="text-sm font-mono text-verdant-green uppercase tracking-[0.3em]">The Solution</h2>
-                <h3 className="text-3xl font-bold text-white">The Verdant Protocol</h3>
+                <h3 className="text-3xl font-bold text-white">The ERDE Protocol</h3>
                 <p className="text-gray-400 max-w-2xl mx-auto">
                     We don't just "monitor" carbon. We actively intervene in the inference pipeline to shave off waste at three critical layers.
                 </p>
@@ -1002,7 +1239,7 @@ const AboutScreen = ({ onNavigate }: { onNavigate: (view: AppView) => void }) =>
                         <span className="text-verdant-cyan">02.</span> Model Arbitration
                     </h4>
                     <p className="text-sm text-gray-400 leading-relaxed">
-                        Not every query needs a Ph.D. level model. Verdant dynamically routes simple queries to efficient "Flash" models and complex ones to "Pro" models.
+                        Not every query needs a Ph.D. level model. ERDE dynamically routes simple queries to efficient "Flash" models and complex ones to "Pro" models.
                     </p>
                      <div className="mt-4 h-1 w-full bg-gray-800 rounded-full overflow-hidden">
                          <div className="h-full w-[65%] bg-verdant-cyan"></div>
@@ -1050,7 +1287,7 @@ const AboutScreen = ({ onNavigate }: { onNavigate: (view: AppView) => void }) =>
                      
                      <div className="flex items-center justify-between p-4 rounded bg-verdant-green/5 border border-verdant-green/20">
                          <div>
-                             <p className="text-xs text-verdant-green font-mono uppercase">Verdant Optimized</p>
+                             <p className="text-xs text-verdant-green font-mono uppercase">ERDE Optimized</p>
                              <p className="text-xl text-white font-bold">1.1 Wh <span className="text-sm font-normal text-gray-500">/ query</span></p>
                          </div>
                          <div className="w-12 h-12 rounded-full bg-verdant-green/10 flex items-center justify-center border border-verdant-green/20">
@@ -1063,9 +1300,9 @@ const AboutScreen = ({ onNavigate }: { onNavigate: (view: AppView) => void }) =>
             <div className="h-[300px] glass-panel p-4 rounded-xl">
                 <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={[
-                        { name: 'Tokens', Standard: 1000, Verdant: 600 },
-                        { name: 'Latency (ms)', Standard: 1200, Verdant: 450 },
-                        { name: 'Energy (Wh)', Standard: 4.2, Verdant: 1.1 },
+                        { name: 'Tokens', Standard: 1000, ERDE: 600 },
+                        { name: 'Latency (ms)', Standard: 1200, ERDE: 450 },
+                        { name: 'Energy (Wh)', Standard: 4.2, ERDE: 1.1 },
                     ]} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
                         <XAxis dataKey="name" stroke="#666" tick={{fill: '#888', fontSize: 12, fontFamily: 'monospace'}} axisLine={false} tickLine={false} />
@@ -1076,7 +1313,7 @@ const AboutScreen = ({ onNavigate }: { onNavigate: (view: AppView) => void }) =>
                             itemStyle={{ fontFamily: 'monospace' }}
                         />
                         <Bar dataKey="Standard" fill="#333" radius={[4, 4, 0, 0]} barSize={40} />
-                        <Bar dataKey="Verdant" fill="#00ff00" radius={[4, 4, 0, 0]} barSize={40} />
+                        <Bar dataKey="ERDE" fill="#00ff00" radius={[4, 4, 0, 0]} barSize={40} />
                     </BarChart>
                 </ResponsiveContainer>
                  <div className="flex justify-center gap-6 mt-4 text-[10px] font-mono uppercase tracking-widest">
@@ -1084,7 +1321,7 @@ const AboutScreen = ({ onNavigate }: { onNavigate: (view: AppView) => void }) =>
                         <span className="w-3 h-3 bg-[#333] rounded-sm"></span> Standard
                     </div>
                      <div className="flex items-center gap-2">
-                        <span className="w-3 h-3 bg-verdant-green rounded-sm"></span> Verdant
+                        <span className="w-3 h-3 bg-verdant-green rounded-sm"></span> ERDE
                     </div>
                 </div>
             </div>
@@ -1120,6 +1357,7 @@ const App: React.FC = () => {
     model: 'gemini-3-flash-preview',
     temperature: 0.7,
     autoPilot: false,
+    apiKey: '',
   });
 
   // Simple Router
