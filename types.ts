@@ -7,6 +7,7 @@ export interface PromptTemplate {
   tokens: number;
   savings: number; // percentage
   models: string[]; // e.g., ['gpt4', 'claude']
+  prompt: string; // The actual prompt text
 }
 
 export enum AppView {
@@ -25,11 +26,26 @@ export interface OptimizationResult {
   energySaved: string; // e.g., "High"
 }
 
+export type AnswerDepth = 'Concise' | 'Standard' | 'Detailed';
+export type OptimizationMode = 'Concise' | 'Structured' | 'Deterministic';
+
 export interface OptimizationConfig {
   model: string;
   temperature: number;
   autoPilot: boolean;
   apiKey?: string;
+  anticipatoryMode?: boolean; // For anticipatory answer mode
+  outputLengthConstraint?: number; // Max tokens for output
+  answerDepth: AnswerDepth;
+  optimizationMode: OptimizationMode;
+}
+
+export interface SavedPrompt {
+  id: string;
+  originalPrompt: string;
+  optimizedPrompt: string;
+  timestamp: number;
+  reuseCount: number;
 }
 
 export interface HistoryItem {

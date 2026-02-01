@@ -21,7 +21,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigat
   return (
     <div className="relative min-h-screen bg-verdant-bg text-white font-display flex flex-col overflow-x-hidden selection:bg-verdant-green selection:text-black">
       <div className="noise"></div>
-      
+
       {/* Background Gradients */}
       <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-[20%] -right-[10%] w-[800px] h-[800px] bg-[#0F003D] rounded-full blur-[120px] opacity-60 mix-blend-screen"></div>
@@ -41,42 +41,39 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigat
           </div>
 
           <div className="hidden md:flex items-center bg-white/5 rounded-lg p-1 border border-border-highlight">
-            <button 
+            <button
               onClick={() => onNavigate(AppView.DASHBOARD)}
-              className={`px-6 py-1.5 rounded text-sm font-medium transition-all duration-300 active:scale-95 ${
-                currentView === AppView.DASHBOARD 
-                ? 'bg-white/10 text-white shadow-verdant-glow border border-verdant-green/30' 
-                : 'text-gray-400 hover:text-white hover:bg-white/5 hover:border-verdant-green/20'
-              }`}
+              className={`px-6 py-1.5 rounded text-sm font-medium transition-all duration-300 active:scale-95 ${currentView === AppView.DASHBOARD
+                  ? 'bg-white/10 text-white shadow-verdant-glow border border-verdant-green/30'
+                  : 'text-gray-400 hover:text-white hover:bg-white/5 hover:border-verdant-green/20'
+                }`}
             >
               Optimization
             </button>
-            <button 
+            <button
               onClick={() => onNavigate(AppView.GALLERY)}
-              className={`px-6 py-1.5 rounded text-sm font-medium transition-all duration-300 active:scale-95 ${
-                currentView === AppView.GALLERY 
-                ? 'bg-white/10 text-white shadow-verdant-glow border border-verdant-green/30' 
-                : 'text-gray-400 hover:text-white hover:bg-white/5 hover:border-verdant-green/20'
-              }`}
+              className={`px-6 py-1.5 rounded text-sm font-medium transition-all duration-300 active:scale-95 ${currentView === AppView.GALLERY
+                  ? 'bg-white/10 text-white shadow-verdant-glow border border-verdant-green/30'
+                  : 'text-gray-400 hover:text-white hover:bg-white/5 hover:border-verdant-green/20'
+                }`}
             >
               Gallery
             </button>
-            <button 
+            <button
               onClick={() => onNavigate(AppView.ABOUT)}
-              className={`px-6 py-1.5 rounded text-sm font-medium transition-all duration-300 active:scale-95 ${
-                currentView === AppView.ABOUT 
-                ? 'bg-white/10 text-white shadow-verdant-glow border border-verdant-green/30' 
-                : 'text-gray-400 hover:text-white hover:bg-white/5 hover:border-verdant-green/20'
-              }`}
+              className={`px-6 py-1.5 rounded text-sm font-medium transition-all duration-300 active:scale-95 ${currentView === AppView.ABOUT
+                  ? 'bg-white/10 text-white shadow-verdant-glow border border-verdant-green/30'
+                  : 'text-gray-400 hover:text-white hover:bg-white/5 hover:border-verdant-green/20'
+                }`}
             >
               Mission
             </button>
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-border-highlight hover:border-verdant-green/30 hover:shadow-verdant-glow transition-all duration-300">
-              <span className="material-symbols-outlined text-verdant-green text-[18px]">cloud_off</span>
-              <span className="text-xs font-mono text-gray-300"><span className="text-verdant-green font-bold">12.4kg</span> CO2e Saved</span>
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-border-highlight">
+              <span className="material-symbols-outlined text-verdant-green text-[18px]">cloud_done</span>
+              <span className="text-xs font-mono text-gray-300">Greener Grids via <span className="text-verdant-green font-bold">Optimization</span></span>
             </div>
           </div>
         </div>
@@ -99,8 +96,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigat
           </div>
         </div>
         <div className="hidden sm:flex items-center gap-4">
-          <span className="text-[10px] text-gray-600 font-mono">System: Operational</span>
-          <span className="text-[10px] text-gray-600 font-mono">v1.2.5</span>
+          <span className="text-[10px] text-gray-600 font-mono text-right capitalize">Production Environment</span>
         </div>
       </footer>
     </div>

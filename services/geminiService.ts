@@ -1,66 +1,92 @@
-import { GoogleGenAI, Type } from "@google/genai";
 import { OptimizationConfig } from "../types";
+import { getOutputLengthConstraint } from "../utils/outputLengthGuard";
+
+const API_BASE_URL = 'http://localhost:3001/api';
 
 export const optimizePrompt = async (promptText: string, config: OptimizationConfig): Promise<any> => {
-  // Prioritize user-provided key from config, fallback to environment variable
-  const apiKey = config.apiKey?.trim() || process.env.API_KEY;
-  
-  // Check if key is missing and log a warning as requested
-  if (!apiKey || apiKey.trim() === '') {
-    console.warn("ERDE-GreenAI: No API_KEY found in configuration or environment variables.");
-    throw new Error("Missing API Key. Please enter a valid Gemini API Key in the settings configuration or check your environment variables.");
-  }
-
-  const ai = new GoogleGenAI({ apiKey });
-
-  // Select model based on config or auto-pilot logic
-  let selectedModel = config.model;
-  
-  if (config.autoPilot) {
-    // Heuristic: long prompts (>500 chars) use Pro for reasoning, short use Flash for speed/efficiency
-    selectedModel = promptText.length > 500 ? "gemini-3-pro-preview" : "gemini-3-flash-preview";
-  }
-
   try {
-    const response = await ai.models.generateContent({
-      model: selectedModel,
-      contents: `You are an expert AI prompt engineer and carbon-efficiency specialist.
-      Optimize the following prompt to reduce token usage while maintaining semantic intent.
-      Remove conversational filler, use imperative verbs, and condense structure.
-      
-      Prompt to optimize:
-      "${promptText}"`,
-      config: {
-        temperature: config.temperature,
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            optimizedText: { type: Type.STRING },
-            originalTokens: { type: Type.NUMBER },
-            optimizedTokens: { type: Type.NUMBER },
-            reductionPercentage: { type: Type.NUMBER },
-            explanation: { type: Type.STRING }
-          }
-        }
-      }
+    // 1. Infer constraints (Answer Depth + Task Type)
+    const constraint = getOutputLengthConstraint(promptText, config.answerDepth);
+
+    // 2. Prepare optimization instructions to inject
+    let instructions = `\n[EFFICIENCY_TARGET]: ${config.answerDepth}\n[CONSTRAINTS]: ${constraint.guidance}`;
+
+    if (config.optimizationMode === 'Deterministic') {
+      instructions += `\n[MODE]: Deterministic. Use explicit rules, minimal interpretation, and improve determinism.`;
+    } else if (config.optimizationMode === 'Structured') {
+      instructions += `\n[MODE]: Structured. Organize with clear sections and bounded categories.`;
+    } else {
+      instructions += `\n[MODE]: Concise. Aggressively limit output tokens and remove redundancy.`;
+    }
+
+    if (config.anticipatoryMode) {
+      instructions += `\n[ANTICIPATORY]: Enabled. Structure response with: Answer, Assumptions, Likely Follow-ups (collapsed), and Next Steps.`;
+    }
+
+    // Combine for optimization
+    const processedPrompt = `${promptText}\n\nREQUIRED SYSTEM CONSTRAINTS TO INJECT DURING OPTIMIZATION:${instructions}`;
+
+    const response = await fetch(`${API_BASE_URL}/optimize`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ prompt: processedPrompt, config }),
     });
 
-    const text = response.text;
-    if (!text) throw new Error("No response text from Gemini");
+    const text = await response.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (parseError) {
+      if (text.includes("<!DOCTYPE") || text.includes("<html")) {
+        throw new Error("Backend Server Error: The server crashed or returned an invalid response. Please check terminal logs.");
+      }
+      throw new Error(text || 'Unknown server error');
+    }
 
-    const data = JSON.parse(text);
-    
-    // Post-process to determine energy rating
-    const energySaved = data.reductionPercentage > 25 ? "High (Green)" : "Moderate";
+    if (!response.ok) {
+      throw new Error(data.error || 'Failed to optimize prompt');
+    }
 
-    return {
-      ...data,
-      energySaved
-    };
-
-  } catch (error) {
+    return data;
+  } catch (error: any) {
     console.error("Gemini optimization service failed:", error);
-    throw error;
+    // Propagate the actual server message if available
+    throw new Error(error.message || "Optimization service unreachable. Is the backend server running?");
   }
+};
+
+export const registerUser = async (email: string, password: string): Promise<any> => {
+  const response = await fetch(`${API_BASE_URL}/auth/register`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ email, password }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || 'Registration failed');
+  }
+
+  return await response.json();
+};
+
+export const loginUser = async (email: string, password: string): Promise<any> => {
+  const response = await fetch(`${API_BASE_URL}/auth/login`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ email, password }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || 'Login failed');
+  }
+
+  return await response.json();
 };
